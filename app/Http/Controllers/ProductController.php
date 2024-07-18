@@ -105,7 +105,9 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $product->delete();
-        return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+        return response()->json([
+            'message' => 'Product deleted successfully.',
+        ]);
     }
 
     public function filter(Request $request)
@@ -123,7 +125,6 @@ class ProductController extends Controller
         }
 
         $products = $query->paginate(10);
-        info(count($products->items()));
 
         if ($request->ajax()) {
             return response()->json([
@@ -132,8 +133,6 @@ class ProductController extends Controller
                 'last_page'    => $products->lastPage(),
             ]);
         }
-
-        // If it's not an AJAX request,  returning  redirect
         return redirect()->route('products.index');
     }
 }

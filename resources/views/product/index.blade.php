@@ -275,10 +275,8 @@
                         return response.json();
                     })
                     .then(data => {
-                        const index = this.products.findIndex(product => product.id === productId);
-                        if (index !== -1) {
-                            this.products.splice(index, 1);
-                        }
+                        this.products = this.products.filter(product => product.id !== productId);
+                        this.filteredProducts = this.filteredProducts.filter(product => product.id !== productId);
                         alert(data.message);
                     })
                     .catch(error => {
@@ -290,3 +288,4 @@
     }
 </script>
 @endsection
+
