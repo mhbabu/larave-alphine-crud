@@ -157,7 +157,9 @@
                     name: '',
                     price: '',
                     discount: '',
-                    status: 'publish'
+                    status: 'publish',
+                    thumbnail: '',
+                    images: []
                 },
                 init() {
                     this.filteredProducts = this.products;
