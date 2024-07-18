@@ -209,7 +209,7 @@
                     sortOrder: this.sortOrder
                 }).toString();
 
-                fetch(`/products?${params}`, {
+                fetch(`/filtering-products?${params}`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                     }

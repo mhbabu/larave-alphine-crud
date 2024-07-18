@@ -137,7 +137,7 @@ class ProductController extends Controller
             ]);
         }
 
-        // If it's not an AJAX request, you can return a redirect or handle as needed
+        // If it's not an AJAX request,  returning  redirect
         return redirect()->route('products.index');
     }
 }

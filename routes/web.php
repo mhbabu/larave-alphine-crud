@@ -8,4 +8,4 @@ Route::get('/', function () {
 });
 
 Route::resource('products', ProductController::class);
-Route::get('/products/filter', [ProductController::class, 'filter'])->name('products.filter');
+Route::get('filtering-products', [ProductController::class, 'filter'])->name('products.filter');
