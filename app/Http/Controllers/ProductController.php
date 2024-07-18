@@ -8,19 +8,19 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     public function index(Request $request)
-    {
-        $products = Product::query(10);
+{
+    $products = Product::paginate(10);
 
-        if ($request->ajax()) {
-            return response()->json([
-                'products' => $products,
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-            ]);
-        }
-
-        return view('product.index', ['products' => $products]);
+    if ($request->ajax()) {
+        return response()->json([
+            'products' => $products,
+            'current_page' => $products->currentPage(),
+            'last_page' => $products->lastPage(),
+        ]);
     }
+
+    return view('product.index', ['products' => $products]);
+}
 
     public function create()
     {
@@ -103,38 +103,5 @@ class ProductController extends Controller
     {
         $product->delete();
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
-    }
-
-    public function filter(Request $request)
-    {
-        $query = Product::query();
-        $searchQuery = $request->input('searchQuery');
-        $sortBy = $request->input('sortOrder', 'asc'); // Default to 'asc'
-
-        if (!empty($searchQuery)) {
-            $query->where(function ($q) use ($searchQuery) {
-                $q->where('name', 'like', "%{$searchQuery}%")
-                    ->orWhere('price', 'like', "%{$searchQuery}%")
-                    ->orWhere('discount', 'like', "%{$searchQuery}%")
-                    ->orWhere('status', 'like', "%{$searchQuery}%");
-            });
-        }
-
-        if (!empty($sortBy) && in_array($sortBy, ['asc', 'desc'])) {
-            $query->orderBy('price', $sortBy);
-        }
-
-        $products = $query->paginate(10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'data' => $products->items(),
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-            ]);
-        }
-
-        // If it's not an AJAX request, you can return a redirect or handle as needed
-        return redirect()->route('products.index');
     }
 }
