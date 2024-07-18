@@ -10,15 +10,6 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $products = Product::paginate(10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'products' => $products,
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-            ]);
-        }
-
         return view('product.index', ['products' => $products]);
     }
 
@@ -126,13 +117,10 @@ class ProductController extends Controller
 
         $products = $query->paginate(10);
 
-        if ($request->ajax()) {
-            return response()->json([
-                'data'         => $products->items(),
-                'current_page' => $products->currentPage(),
-                'last_page'    => $products->lastPage(),
-            ]);
-        }
-        return redirect()->route('products.index');
+        return response()->json([
+            'data'         => $products->items(),
+            'current_page' => $products->currentPage(),
+            'last_page'    => $products->lastPage(),
+        ]);
     }
 }

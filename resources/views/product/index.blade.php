@@ -283,9 +283,39 @@
                         console.error('Error deleting product:', error);
                     });
                 }
+            },
+            fetchPage(page) {
+                if (page < 1 || page > this.lastPage || page === this.currentPage) {
+                    return;
+                }
+
+                const params = new URLSearchParams({
+                    page: page,
+                    searchQuery: this.searchQuery,
+                    sortOrder: this.sortOrder
+                }).toString();
+
+                fetch(`/filtering-products?${params}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    this.filteredProducts = data.data;
+                    this.currentPage = data.current_page;
+                    this.lastPage = data.last_page;
+                })
+                .catch(error => {
+                    console.error('Error fetching products:', error);
+                });
             }
         }
     }
 </script>
 @endsection
-
