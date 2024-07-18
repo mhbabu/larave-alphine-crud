@@ -115,12 +115,7 @@ class ProductController extends Controller
         $sortBy = $request->input('sortOrder', 'asc'); // Default to 'asc'
 
         if (!empty($searchQuery)) {
-            $query->where(function ($q) use ($searchQuery) {
-                $q->where('name', 'like', "%{$searchQuery}%")
-                    ->orWhere('price', 'like', "%{$searchQuery}%")
-                    ->orWhere('discount', 'like', "%{$searchQuery}%")
-                    ->orWhere('status', 'like', "%{$searchQuery}%");
-            });
+            $query->where('name', 'like', "%{$searchQuery}%");
         }
 
         if (!empty($sortBy) && in_array($sortBy, ['asc', 'desc'])) {
@@ -128,12 +123,13 @@ class ProductController extends Controller
         }
 
         $products = $query->paginate(10);
+        info(count($products->items()));
 
         if ($request->ajax()) {
             return response()->json([
-                'data' => $products->items(),
+                'data'         => $products->items(),
                 'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
+                'last_page'    => $products->lastPage(),
             ]);
         }
 

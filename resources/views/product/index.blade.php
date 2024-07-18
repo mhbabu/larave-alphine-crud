@@ -19,7 +19,7 @@
 
     <!-- Filter Inputs -->
     <div class="flex justify-between mb-6">
-        <input type="text" placeholder="Search..." class="border p-2" x-model="searchQuery"
+        <input type="text" placeholder="Search by name..." class="border p-2" x-model="searchQuery"
             @input.debounce.300ms="filterProducts">
         <select class="border p-2" x-model="sortOrder" @change="filterProducts">
             <option value="">Sort by Price</option>
@@ -88,7 +88,15 @@
         </tbody>
     </table>
     <div class="mt-4">
-        {{ $products->links() }}
+        <template x-if="lastPage > 1">
+            <nav class="flex items-center justify-between">
+                <a href="#" class="btn btn-primary" x-on:click.prevent="fetchPage(currentPage - 1)"
+                    :disabled="currentPage === 1">Previous</a>
+                <div>Page <span x-text="currentPage"></span> of <span x-text="lastPage"></span></div>
+                <a href="#" class="btn btn-primary" x-on:click.prevent="fetchPage(currentPage + 1)"
+                    :disabled="currentPage === lastPage">Next</a>
+            </nav>
+        </template>
     </div>
 
     <!-- Modal -->
