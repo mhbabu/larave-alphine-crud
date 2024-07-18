@@ -139,6 +139,63 @@
                 </form>
             </div>
         </div>
+
+        <!-- Edit Modal -->
+        <div x-show="showEditModal" @click.away="closeModal"
+            class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="bg-white rounded-lg p-6">
+                <h2 class="text-xl font-bold mb-4">Edit Product</h2>
+                <form @submit.prevent="updateProduct">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Product Name</label>
+                        <input type="text" class="border p-2 w-full" x-model="editProductData.name" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Price</label>
+                        <input type="number" class="border p-2 w-full" x-model="editProductData.price" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Discount:</label>
+                        <input type="number" class="border p-2 w-full" x-model="editProductData.discount">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                        <select class="border p-2 w-full" x-model="editProductData.status" required>
+                            <option value="publish">Publish</option>
+                            <option value="unpublish">Unpublish</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Thumbnail</label>
+                        <input type="file" accept="image/*" class="border p-2 w-full"
+                            @change="handleThumbnailUpload">
+                        <template x-if="editProductData.thumbnail">
+                            <img :src="editProductData.thumbnail" alt="Thumbnail" class="mt-2 w-32 h-32">
+                        </template>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Images</label>
+                        <input type="file" accept="image/*" multiple class="border p-2 w-full"
+                            @change="handleImageUpload">
+                        <template x-if="editProductData.images && editProductData.images.length">
+                            <div class="mt-2">
+                                <template x-for="(image, index) in editProductData.images" :key="index">
+                                    <img :src="image" alt="Product Image" class="inline-block w-32 h-32 mr-2">
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" @click="closeModal"
+                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">Cancel
+                        </button>
+                        <button type="submit"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 @endsection
 
@@ -153,6 +210,7 @@
                 searchQuery: '',
                 sortOrder: '',
                 showModal: false,
+                showEditModal: false,
                 newProduct: {
                     name: '',
                     price: '',
@@ -161,14 +219,32 @@
                     thumbnail: '',
                     images: []
                 },
+                editProductData: {
+                    id: '',
+                    name: '',
+                    price: '',
+                    discount: '',
+                    status: '',
+                    thumbnail: null,
+                    images: []
+                },
                 init() {
                     this.filteredProducts = this.products;
                 },
                 openModal() {
                     this.showModal = true;
                 },
+                openEditModal(product) {
+                    this.editProductData = {
+                        ...product,
+                        thumbnail: product.thumbnail || null,
+                        images: product.images || []
+                    };
+                    this.showEditModal = true;
+                },
                 closeModal() {
                     this.showModal = false;
+                    this.showEditModal = false;
                 },
                 submitProduct() {
                     let formData = new FormData();
@@ -314,7 +390,60 @@
                         .catch(error => {
                             console.error('Error fetching products:', error);
                         });
-                }
+                },
+                editProduct(product) {
+                    const item = JSON.stringify(product);
+                    this.editProductData = {
+                        ...product,
+                        thumbnail: item.thumbnail || null,
+                        images: item.images || []
+                    };
+                    this.showEditModal = true;
+                },
+                updateProduct() {
+                    let formData = new FormData();
+                    formData.append('name', this.editProductData.name);
+                    formData.append('price', this.editProductData.price);
+                    formData.append('discount', this.editProductData.discount);
+                    formData.append('status', this.editProductData.status);
+                    if (this.editProductData.thumbnail instanceof File) {
+                        formData.append('thumbnail', this.editProductData.thumbnail);
+                    }
+                    if (this.editProductData.images.length > 0) {
+                        for (let i = 0; i < this.editProductData.images.length; i++) {
+                            if (this.editProductData.images[i] instanceof File) {
+                                formData.append('images[]', this.editProductData.images[i]);
+                            }
+                        }
+                    }
+
+                    fetch(`/products/${this.editProductData.id}`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'X-HTTP-Method-Override': 'POST'
+                            },
+                            body: formData,
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            const index = this.products.findIndex(product => product.id === data.product.id);
+                            if (index !== -1) {
+                                this.products[index] = data.product;
+                            }
+                            this.filteredProducts = [...this.products];
+                            this.closeModal();
+                            alert(data.message);
+                        })
+                        .catch(error => {
+                            console.error('Error updating product:', error);
+                        });
+                },
             }
         }
     </script>
